@@ -5,7 +5,6 @@ from PIL import Image, ImageTk
 
 import random
 
-
 bg_color = "#282a36"
 bg_color_txt_fld = "#626363"
 fg_color = "#f1fa8c"
@@ -19,18 +18,46 @@ btn_bg_color = "#e85b1e"
 btn_ac_bg_color = "#ed9c79"
 
 
-
 def destroy_all_widgets(frame):
-    for widget in frame.winfo_children():
-        widget.destroy()
+    if frame:
+        # Recursively destroy all widgets including all subchildren and containers
+        def destroy_recursively(widget):
+            for child in widget.winfo_children():
+                # print(f"Destroying child widget: {child}")
+                destroy_recursively(child)
+                child.destroy()
+
+        destroy_recursively(frame)
+
+def destroy_all_widgets_exclude(frame):
+    if frame:
+        # Function to recursively destroy widgets, excluding Frame, Canvas, and Scrollbar
+        def destroy_recursively(widget):
+            # Skip destroying Frame, Canvas, and Scrollbar widgets, but destroy their children
+            if isinstance(widget, (tk.Frame, tk.Canvas, tk.Scrollbar)):
+                # If it's a Frame, Canvas, or Scrollbar, only destroy its children, not the widget itself
+                for child in widget.winfo_children():
+                    # print(f"Destroying child of {widget}: {child}")  # Debug print
+                    destroy_recursively(child)  # Recursively destroy child widgets
+                return  # Skip destroying the Frame, Canvas, or Scrollbar itself
+
+            # Destroy the widget itself and its children
+            # print(f"Destroying widget: {widget}")  # Debug print
+            for child in widget.winfo_children():
+                # print(f"Destroying child widget: {child}")  # Debug print
+                destroy_recursively(child)  # Recursively destroy child widgets
+            # print(widget)
+            widget.destroy()  # Finally, destroy the current widget
+
+        # Start the recursion from the given frame
+        destroy_recursively(frame)
 
 def set_hover_effects(button, hover_bg=btn_ac_bg_color, hover_fg="#000000", normal_bg=btn_bg_color, normal_fg="#ffffff"):
     button.bind("<Enter>", lambda e: button.config(bg=hover_bg, fg=hover_fg))
     button.bind("<Leave>", lambda e: button.config(bg=normal_bg, fg=normal_fg))
 
 def load_frame1():
-    #destroy_all_widgets(frame2)    
-   
+    
     frame1.tkraise()  # Bring frame1 to the front
     frame1.grid_propagate(False)  # Prevent frame1 from resizing to fit its contents
 
@@ -62,11 +89,15 @@ def load_frame1():
         font=("Verdana", 30)
     ).grid(row=0, column=1, padx=10, pady=10)
  
-def load_frame2():
-    #destroy_all_widgets(frame2)    
+def load_frame3(frame):
+
+    destroy_all_widgets_exclude(frame)    
    
     frame2.tkraise() 
     frame2.grid_propagate(False) 
+
+    frame3.tkraise()
+    frame3.grid_propagate(False)
 
     
     tk.Label(
@@ -153,7 +184,8 @@ def load_frame2():
     # Add text to the center of the circle
     canvas.create_text(radius, radius, text="9", font=("Verdana", 20), fill="#ffffff")
 
-def load_frame3():
+
+
     
     add_button = tk.Button(
         frame3,
@@ -164,7 +196,7 @@ def load_frame3():
         cursor="hand2",
         activebackground=btn_ac_bg_color,
         activeforeground="black",
-        command=lambda: load_frame2()
+        command=lambda: load_frame4(frame3)
     )
     add_button.grid(row=0, column=0, padx=60, pady=10)
 
@@ -179,7 +211,7 @@ def load_frame3():
         cursor="hand2",
         activebackground=btn_ac_bg_color,
         activeforeground="black",
-        command=lambda: load_frame2()
+        command=lambda: load_frame9(frame3)
     )
     list_button.grid(row=0, column=1, padx=60, pady=10)
 
@@ -197,15 +229,20 @@ def load_frame3():
         cursor="hand2",
         activebackground=btn_ac_bg_color,
         activeforeground="black",
-        command=lambda: load_frame2()
+        command=lambda: load_frame12(frame3)
     )
     revise_button.grid(row=0, column=2, padx=60, pady=10)
 
     set_hover_effects(revise_button)
 
-def load_frame4():
+def load_frame4(frame):
+    
+    destroy_all_widgets_exclude(frame)
+
     frame4.tkraise() 
     frame4.grid_propagate(False) 
+
+    canvas.yview_moveto(0)
     
     tk.Label(
         frame5,
@@ -392,15 +429,20 @@ def load_frame4():
         cursor="hand2",
         activebackground=btn_ac_bg_color,
         activeforeground="black",
-        command=lambda: print("hello")
+        command=lambda: load_frame3(frame4)
     )
     add_ques_gtadmin_btn.grid(row=0, column=1, padx=(25, 10), pady=15 , sticky="w")
     set_hover_effects(add_ques_gtadmin_btn)
 
-def load_frame9():
+def load_frame9(frame):
+
+    destroy_all_widgets_exclude(frame)
+
     frame9.tkraise() 
     frame9.grid_propagate(False) 
     
+    canvas1.yview_moveto(0)
+
     tk.Label(
         scrollable_frame1,
         text="Questions List",
@@ -408,10 +450,6 @@ def load_frame9():
         fg=fg_color2,
         font=("Verdana", 15)
     ).grid(row=0, column=0, padx=(25, 10), pady=10, sticky="w")
-
-
-
-
 
     # Define style
     style = ttk.Style()
@@ -556,7 +594,7 @@ def load_frame9():
 
     li_ques_view= tk.Button(
         frame11,
-        text="View Question",
+        text="VIEW QUESTION",
         font=("Verdana", 12),
         bg=btn_bg_color,
         fg="white",
@@ -570,7 +608,7 @@ def load_frame9():
 
     li_ques_delete= tk.Button(
         frame11,
-        text="Delete Question(s)",
+        text="DELETE QUESTION(S)",
         font=("Verdana", 12),
         bg=btn_bg_color,
         fg="white",
@@ -585,7 +623,7 @@ def load_frame9():
 
     li_ques_update= tk.Button(
         frame11,
-        text="Update Question",
+        text="UPDATE QUESTION",
         font=("Verdana", 12),
         bg=btn_bg_color,
         fg="white",
@@ -597,7 +635,24 @@ def load_frame9():
     li_ques_update.grid(row=0, column=3, padx=(25, 10), pady=15, ipadx=3, ipady=3 , sticky="w")
     set_hover_effects(li_ques_update)
 
-def load_frame12():
+    li_ques_admin_btn = tk.Button(
+        frame11,
+        text="GOTO ADMIN",
+        font=("Verdana", 12),
+        bg=btn_bg_color,
+        fg="white",
+        cursor="hand2",
+        activebackground=btn_ac_bg_color,
+        activeforeground="black",
+        command=lambda: load_frame3(frame9)
+    )
+    li_ques_admin_btn.grid(row=0, column=4, padx=(25, 10), pady=15 , sticky="w")
+    set_hover_effects(li_ques_admin_btn)
+
+def load_frame12(frame):
+
+    destroy_all_widgets_exclude(frame)
+
     frame12.tkraise() 
     frame12.grid_propagate(False) 
     
@@ -625,14 +680,7 @@ def load_frame12():
         fg=fg_color1,
         insertbackground=fg_color1
     ).grid(row=0, column=1, padx=10, pady= 5, ipadx=5, ipady=5, sticky="w")
-
-    # Variable to store the selected option
-    selected_option = tk.StringVar(value="Easy")  # Initially, no option is selected
-
-    # Function to display the selected option
-    def show_selection():
-        print(f"Selected: {selected_option.get()}")
-
+   
     tk.Label(
         frame13,
         text="Difficulty",
@@ -643,43 +691,26 @@ def load_frame12():
 
 
      # Create radio buttons with 3 options
-    tk.Radiobutton(
-        frame13,
-        bg= bg_color,
-        fg= fg_color2,
-        selectcolor= bg_color,
-        font=("Verdana", 12),
-        text="Easy", 
-        variable=selected_option, 
-        value="Easy", 
-        command=show_selection
-    ).grid(row=0, column=1, padx=(25, 10), pady=5, sticky="w")
-
-    tk.Radiobutton(
-        frame13, 
-        bg= bg_color,
-        fg= fg_color2,
-        selectcolor= bg_color,
-        font=("Verdana", 12),
-        text="Medium", 
-        variable=selected_option, 
-        value="Medium", 
-        command=show_selection
-    ).grid(row=0, column=2, padx=(25, 10), pady=5, sticky="w")
     
+    # List of options
+    checkbox_texts = ["EASY", "MEDIUM", "HARD"]
+    checkbox_vars = []
 
-    tk.Radiobutton(
-        frame13, 
-        bg= bg_color,
-        fg= fg_color2,
-        selectcolor= bg_color,
-        font=("Verdana", 12),
-        text="Hard", 
-        variable=selected_option, 
-        value="Hard", 
-        command=show_selection
-    ).grid(row=0, column=3, padx=(25, 10), pady=5, sticky="w")
-
+    # Create a Checkbutton for each item
+    for index in range(len(checkbox_texts)):
+        var = tk.IntVar()  # Variable to store the checkbox state
+        checkbox_vars.append(var)
+        cb = tk.Checkbutton(
+            frame13,
+            text=checkbox_texts[index], 
+            variable=var, 
+            bg = bg_color, 
+            fg= fg_color2, 
+            selectcolor=bg_color,
+            font=("Verdana", 12)
+        )
+        cb.grid(row=0, column=index+1, padx=(25, 10), pady=5, sticky="w")
+   
 
     tk.Label(
         frame15,
@@ -755,11 +786,189 @@ def load_frame12():
         cursor="hand2",
         activebackground=btn_ac_bg_color,
         activeforeground="black",
-        command=lambda: print("hello")
+        command=lambda: load_frame17(frame12)
     )
     ques_gene_btn.grid(row=6, column=0, padx=(25, 10), pady=15 , sticky="w")
     set_hover_effects(ques_gene_btn)
 
+    gen_back_btn = tk.Button(
+        frame12,
+        text="GOTO ADMIN",
+        font=("Verdana", 12),
+        bg=btn_bg_color,
+        fg="white",
+        cursor="hand2",
+        activebackground=btn_ac_bg_color,
+        activeforeground="black",
+        command=lambda: load_frame3(frame12)
+    )
+    gen_back_btn.grid(row=6, column=0, padx=(300, 10), pady=15 , sticky="w")
+    set_hover_effects(gen_back_btn)
+
+def load_frame17(frame):
+
+    destroy_all_widgets_exclude(frame)
+
+    frame17.tkraise() 
+    frame17.grid_propagate(False) 
+    frame20.grid_propagate(False)
+    
+    tk.Label(
+        frame18,
+        text="Question ID",
+        bg=bg_color,
+        fg=fg_color2,
+        font=("Verdana", 15)
+    ).grid(row=0, column=0, padx=(25, 10), pady=10, sticky="w")
+
+    tk.Label(
+        frame18,
+        text="38",
+        bg=bg_color,
+        fg=fg_color1,
+        font=("Verdana", 15)
+    ).grid(row=0, column=1, padx=(0, 10), pady=10, sticky="w")
+
+    tk.Label(
+        frame18,
+        text="Dificulty",
+        bg=bg_color,
+        fg=fg_color2,
+        font=("Verdana", 15)
+    ).grid(row=0, column=2, padx=(100, 10), pady=10, sticky="w")
+
+    tk.Label(
+        frame18,
+        text="HARD",
+        bg=bg_color,
+        fg=fg_color1,
+        font=("Verdana", 15)
+    ).grid(row=0, column=3, padx=(0, 10), pady=10, sticky="w")
+
+    tk.Label(
+        frame18,
+        text="Solved",
+        bg=bg_color,
+        fg=fg_color2,
+        font=("Verdana", 15)
+    ).grid(row=0, column=4, padx=(100, 10), pady=10, sticky="w")
+
+    tk.Label(
+        frame18,
+        text="5 times",
+        bg=bg_color,
+        fg=fg_color1,
+        font=("Verdana", 15)
+    ).grid(row=0, column=5, padx=(0, 10), pady=10, sticky="w")
+
+    view_ques_btn = tk.Button(
+        frame19,
+        text="VIEW QUESTION",
+        font=("Verdana", 12),
+        bg=btn_bg_color,
+        fg="white",
+        cursor="hand2",
+        activebackground=btn_ac_bg_color,
+        activeforeground="black",
+        command=lambda: print("hello")
+    )
+    view_ques_btn.grid(row=0, column=0, padx=(25, 10), pady=15 , sticky="w")
+    set_hover_effects(view_ques_btn)
+
+    view_soln_btn = tk.Button(
+        frame19,
+        text="VIEW SOLUTION",
+        font=("Verdana", 12),
+        bg=btn_bg_color,
+        fg="white",
+        cursor="hand2",
+        activebackground=btn_ac_bg_color,
+        activeforeground="black",
+        command=lambda: print("hello")
+    )
+    view_soln_btn.grid(row=0, column=1, padx=(25, 10), pady=15 , sticky="w")
+    set_hover_effects(view_soln_btn)
+
+    add_revised_btn = tk.Button(
+        frame19,
+        text="ADD REVISED",
+        font=("Verdana", 12),
+        bg=btn_bg_color,
+        fg="white",
+        cursor="hand2",
+        activebackground=btn_ac_bg_color,
+        activeforeground="black",
+        command=lambda: print("hello")
+    )
+    add_revised_btn.grid(row=0, column=2, padx=(25, 10), pady=15 , sticky="w")
+    set_hover_effects(add_revised_btn)
+
+    del_ques_btn = tk.Button(
+        frame19,
+        text="DELETE QUESTiON",
+        font=("Verdana", 12),
+        bg=btn_bg_color,
+        fg="white",
+        cursor="hand2",
+        activebackground=btn_ac_bg_color,
+        activeforeground="black",
+        command=lambda: print("hello")
+    )
+    del_ques_btn.grid(row=0, column=3, padx=(25, 10), pady=15 , sticky="w")
+    set_hover_effects(del_ques_btn)
+
+    view_ques_btn = tk.Button(
+        frame19,
+        text="GOTO ADMIN",
+        font=("Verdana", 12),
+        bg=btn_bg_color,
+        fg="white",
+        cursor="hand2",
+        activebackground=btn_ac_bg_color,
+        activeforeground="black",
+        command=lambda: load_frame3(frame19)
+    )
+    view_ques_btn.grid(row=0, column=4, padx=(25, 10), pady=15 , sticky="w")
+    set_hover_effects(view_ques_btn)
+
+    tk.Text(
+        frame17,
+        width=110,
+        height=15,
+        font=("Verdana", 12),
+        bg=bg_color_txt_fld,
+        fg=fg_color1,
+        insertbackground=fg_color1
+    ).grid(row=2, column=0, columnspan=25, padx=(25, 10), pady=5, ipadx=5, ipady=5, sticky="w")
+
+
+    prev_ques_btn = tk.Button(
+        frame20,
+        text="PREVIOUS QUESTION",
+        font=("Verdana", 12),
+        bg=btn_bg_color,
+        fg="white",
+        cursor="hand2",
+        activebackground=btn_ac_bg_color,
+        activeforeground="black",
+        command=lambda: print("hello")
+    )
+    prev_ques_btn.grid(row=0, column=0, padx=(25, 10), pady=15)
+    set_hover_effects(prev_ques_btn)
+
+    next_ques_btn = tk.Button(
+        frame20,
+        text="NEXT QUESTION",
+        font=("Verdana", 12),
+        bg=btn_bg_color,
+        fg="white",
+        cursor="hand2",
+        activebackground=btn_ac_bg_color,
+        activeforeground="black",
+        command=lambda: print("hello")
+    )
+    next_ques_btn.grid(row=0, column=1, padx=(750, 10), pady=15)
+    set_hover_effects(next_ques_btn)
 
 
 # Set up the main window
@@ -941,16 +1150,27 @@ frame16 = tk.Frame(frame12, width=window_width, height=100, bg=bg_color)
 frame16.grid(row=5, column=0, sticky="w")
 
 
+# 👀frame17 is for view question
+
+frame17 = tk.Frame(root, width=window_width, height=window_height-150, bg=bg_color)
+frame17.grid(row=1, column=0, sticky="nsew")
+
+# 👀frame18 is for view question qid, difficulty and solved times
+
+frame18 = tk.Frame(frame17, width=window_width, height=100, bg=bg_color)
+frame18.grid(row=0, column=0, sticky="w")
+
+# 👀frame19 is for question qenerator revised
+
+frame19 = tk.Frame(frame17, width=window_width, height=100, bg=bg_color)
+frame19.grid(row=1, column=0, sticky="w")
+
+# 👀frame20 is for question qenerator revised
+
+frame20 = tk.Frame(frame17, width=window_width, height=75, bg=bg_color)
+frame20.grid(row=3, column=0, sticky="nsew")
 
 load_frame1()
-
-# load_frame2()
-# load_frame3()
-
-load_frame4()
-
-# load_frame9()
-
-# load_frame12()
+load_frame3(None)
 
 root.mainloop()
