@@ -1,9 +1,12 @@
 import os
 import tkinter as tk
 from tkinter import ttk
+from tkinter import messagebox
 from PIL import Image, ImageTk
 
-import random
+import validators as vd
+
+import Question as ques
 
 bg_color = "#282a36"
 bg_color_txt_fld = "#626363"
@@ -17,6 +20,8 @@ btn_ac_bg_color1 = "#6bb56d"
 btn_bg_color = "#e85b1e"
 btn_ac_bg_color = "#ed9c79"
 
+
+ques.load_questions()
 
 def destroy_all_widgets(frame):
     if frame:
@@ -119,7 +124,7 @@ def load_frame3(frame):
     # Draw the circle centered at (radius, radius) with the given radius
     canvas.create_oval(0, 0, 2 * radius, 2 * radius, outline=bg_color, fill=btn_bg_color1, width=2)
     # Add text to the center of the circle
-    canvas.create_text(radius, radius, text="50", font=("Verdana", 20), fill="#ffffff")
+    canvas.create_text(radius, radius, text=len(ques.get_questions()), font=("Verdana", 20), fill="#ffffff")
 
     tk.Label(
         frame2,
@@ -140,7 +145,7 @@ def load_frame3(frame):
     # Draw the circle centered at (radius, radius) with the given radius
     canvas.create_oval(0, 0, 2 * radius, 2 * radius, outline=bg_color, fill=btn_bg_color1, width=2)
     # Add text to the center of the circle
-    canvas.create_text(radius, radius, text="10", font=("Verdana", 20), fill="#ffffff")
+    canvas.create_text(radius, radius, text=ques.search_by_one_difficulty_count("Easy"), font=("Verdana", 20), fill="#ffffff")
 
     tk.Label(
         frame2,
@@ -161,7 +166,7 @@ def load_frame3(frame):
     # Draw the circle centered at (radius, radius) with the given radius
     canvas.create_oval(0, 0, 2 * radius, 2 * radius, outline=bg_color, fill=btn_bg_color1, width=2)
     # Add text to the center of the circle
-    canvas.create_text(radius, radius, text="20", font=("Verdana", 20), fill="#ffffff")
+    canvas.create_text(radius, radius, text=ques.search_by_one_difficulty_count("Medium"), font=("Verdana", 20), fill="#ffffff")
 
     tk.Label(
         frame2,
@@ -182,7 +187,7 @@ def load_frame3(frame):
     # Draw the circle centered at (radius, radius) with the given radius
     canvas.create_oval(0, 0, 2 * radius, 2 * radius, outline=bg_color, fill=btn_bg_color1, width=2)
     # Add text to the center of the circle
-    canvas.create_text(radius, radius, text="9", font=("Verdana", 20), fill="#ffffff")
+    canvas.create_text(radius, radius, text=ques.search_by_one_difficulty_count("Hard"), font=("Verdana", 20), fill="#ffffff")
 
 
 
@@ -235,7 +240,7 @@ def load_frame3(frame):
 
     set_hover_effects(revise_button)
 
-def load_frame4(frame):
+def load_frame4(frame, update_id=None):
     
     destroy_all_widgets_exclude(frame)
 
@@ -243,37 +248,28 @@ def load_frame4(frame):
     frame4.grid_propagate(False) 
 
     canvas.yview_moveto(0)
+
+
+    ser_or_update = False
     
-    tk.Label(
+    qid_ser = tk.Label(
         frame5,
         text="Question ID",
         bg="#5c5c5c",
         fg=fg_color2,
         font=("Verdana", 15)
-    ).grid(row=0, column=0, padx=(25, 10), pady=10, sticky="w")
+    )
+    qid_ser.grid(row=0, column=0, padx=(25, 10), pady=10, sticky="w")
 
-    tk.Entry(
+    question_ser = tk.Entry(
         frame5,
         width=5,
         font=("Verdana", 15),
         bg=bg_color_txt_fld,
         fg=fg_color1,
         insertbackground=fg_color1
-    ).grid(row=0, column=1, padx=10, ipadx=5, ipady=5, sticky="w")
-
-    add_que_ser_btn = tk.Button(
-        frame5,
-        text="SEARCH",
-        font=("Verdana", 12),
-        bg=btn_bg_color,
-        fg="white",
-        cursor="hand2",
-        activebackground=btn_ac_bg_color,
-        activeforeground="black",
-        command=lambda: print("hello")
     )
-    add_que_ser_btn.grid(row=0, column=2, padx=10, sticky="w")
-    set_hover_effects(add_que_ser_btn)
+    question_ser.grid(row=0, column=1, padx=10, ipadx=5, ipady=5, sticky="w")
 
     tk.Label(
         frame6,
@@ -283,14 +279,46 @@ def load_frame4(frame):
         font=("Verdana", 12)
     ).grid(row=0, column=0, padx=(25, 10), pady=15, sticky="w")
 
-    tk.Entry(
+    # Create a custom style
+    style = ttk.Style()
+    style.theme_use('default')  # Use 'default' or other known themes
+
+    # Define a style for readonly entry
+    style.configure("CustomReadonly.TEntry",
+                    foreground="green",
+                    fieldbackground="red",  # This is what sets the background
+                    background="gray")
+    
+    style.map("CustomReadonly.TEntry",
+          fieldbackground=[("readonly", bg_color_txt_fld)],
+          foreground=[("readonly", fg_color1)])
+
+    qid = ttk.Entry(
         frame6,
         width=5,
         font=("Verdana", 12),
-        bg=bg_color_txt_fld,
-        fg=fg_color1,
-        insertbackground=fg_color1
-    ).grid(row=0, column=1, padx=10, pady= 5, ipadx=5, ipady=5, sticky="w")
+        style="CustomReadonly.TEntry"
+        
+    )
+    qid.grid(row=0, column=1, padx=10, pady= 5, ipadx=5, ipady=5, sticky="w")
+
+
+    def get_next_id(data):
+
+        if not data:
+            return 1 
+
+        # Get the latest key (assuming the keys are in a sorted order)
+        latest_key = max(data.keys(), key=lambda k: int(k))  # max by the integer value of the keys
+        
+        # Convert the latest key to an integer and add 1
+        next_id = int(latest_key) + 1
+        
+        return next_id
+    
+    qid.insert(0, get_next_id(ques.get_questions()))    
+    qid.config(state="readonly")
+    
 
     tk.Label(
         frame6,
@@ -300,13 +328,8 @@ def load_frame4(frame):
         font=("Verdana", 12)
     ).grid(row=0, column=2, padx=(25, 10), pady=15, sticky="w")
 
-    # Function to display the selected option
-    def show_drop_selection():
-        print(f"Selected: {dropdown.get()}")
-
     # Create a list of options
-    options = ["DSA", "PYTHON", "JAVASCRIPT"]
-
+    options = ques.get_categories()
     # Create a Tkinter variable to hold the selected value
     dropdown = tk.StringVar()
     dropdown.set(options[0])  # Set default value to the first option
@@ -324,7 +347,7 @@ def load_frame4(frame):
         font=("Verdana", 12)
     ).grid(row=2, column=0, padx=(25, 10), pady=5, sticky="w")
 
-    tk.Text(
+    question_in = tk.Text(
         scrollable_frame,
         width=110,
         height=10,
@@ -332,7 +355,8 @@ def load_frame4(frame):
         bg=bg_color_txt_fld,
         fg=fg_color1,
         insertbackground=fg_color1
-    ).grid(row=3, column=0, columnspan=25, padx=(25, 10), pady=5, ipadx=5, ipady=5, sticky="w")
+    )
+    question_in.grid(row=3, column=0, columnspan=25, padx=(25, 10), pady=5, ipadx=5, ipady=5, sticky="w")
 
     
     tk.Label(
@@ -344,12 +368,9 @@ def load_frame4(frame):
     ).grid(row=0, column=0, padx=(25, 10), pady=5, sticky="w")
     
     # Variable to store the selected option
-    selected_option = tk.StringVar(value="Easy")  # Initially, no option is selected
+    selected_option = tk.StringVar(value="Easy")  # Initially, easy is selected
 
-    # Function to display the selected option
-    def show_selection():
-        print(f"Selected: {selected_option.get()}")
-
+    
     # Create radio buttons with 3 options
     tk.Radiobutton(
         frame7,
@@ -359,8 +380,7 @@ def load_frame4(frame):
         font=("Verdana", 12),
         text="Easy", 
         variable=selected_option, 
-        value="Easy", 
-        command=show_selection
+        value="Easy"
     ).grid(row=0, column=1, padx=(25, 10), pady=5, sticky="w")
 
     tk.Radiobutton(
@@ -371,8 +391,7 @@ def load_frame4(frame):
         font=("Verdana", 12),
         text="Medium", 
         variable=selected_option, 
-        value="Medium", 
-        command=show_selection
+        value="Medium"
     ).grid(row=0, column=2, padx=(25, 10), pady=5, sticky="w")
     
     tk.Radiobutton(
@@ -383,8 +402,7 @@ def load_frame4(frame):
         font=("Verdana", 12),
         text="Hard", 
         variable=selected_option, 
-        value="Hard", 
-        command=show_selection
+        value="Hard"
     ).grid(row=0, column=3, padx=(25, 10), pady=5, sticky="w")
 
     tk.Label(
@@ -395,7 +413,7 @@ def load_frame4(frame):
         font=("Verdana", 12)
     ).grid(row=5, column=0, padx=(25, 10), pady=5, sticky="w")
 
-    solution_text = tk.Text(
+    solution_in = tk.Text(
         scrollable_frame,
         width=110,
         height=10,
@@ -404,7 +422,7 @@ def load_frame4(frame):
         fg=fg_color1,
         insertbackground=fg_color1
     )
-    solution_text.grid(row=6, column=0, columnspan=4, padx=(25, 10), pady=5, ipadx=5, ipady=5, sticky="w")
+    solution_in.grid(row=6, column=0, columnspan=4, padx=(25, 10), pady=5, ipadx=5, ipady=5, sticky="w")
 
     add_ques_save_btn = tk.Button(
         frame8,
@@ -415,10 +433,52 @@ def load_frame4(frame):
         cursor="hand2",
         activebackground=btn_ac_bg_color,
         activeforeground="black",
-        command=lambda: print("hello")
+        command=lambda: add_question()
     )
     add_ques_save_btn.grid(row=0, column=0, padx=(25, 10), pady=15, sticky="w")
     set_hover_effects(add_ques_save_btn)
+
+    def add_question():
+        nonlocal ser_or_update
+
+        if vd.is_text_empty(question_in.get("1.0", "end-1c")):
+            messagebox.showerror("QUESTION REVISION APP", "Question can't be empty.")
+            return
+        elif vd.is_text_empty(solution_in.get("1.0", "end-1c")):
+            messagebox.showerror("QUESTION REVISION APP", "Solution can't be empty.")
+            return
+        else:
+            try:
+                if ser_or_update:
+                    ques.add_question(qid.get(), question_in.get("1.0", "end-1c"), solution_in.get("1.0", "end-1c"), dropdown.get(), selected_option.get(), ques.get_questions()[qid.get()]["revised"])
+                else:
+                    ques.add_question(qid.get(), question_in.get("1.0", "end-1c"), solution_in.get("1.0", "end-1c"), dropdown.get(), selected_option.get(), 0)
+                
+                ser_or_update = False
+                messagebox.showinfo("QUESTION REVISION APP", "Question saved successfully.")
+
+            except Exception as ex:
+                print(ex)
+                messagebox.showerror("QUESTION REVISION APP", "Question save failed.")
+        
+        
+        qid.config(state="normal")
+        qid.delete(0, tk.END)
+        qid.insert(0, get_next_id(ques.get_questions()))    
+        qid.config(state="readonly")
+
+
+
+        question_in.delete(1.0, tk.END)
+        solution_in.delete(1.0, tk.END)
+        selected_option.set("Easy")
+        dropdown.set(options[0])
+
+        question_ser.delete(0, tk.END)
+
+        canvas.yview_moveto(0)
+        qid.focus_set() 
+     
 
     add_ques_gtadmin_btn = tk.Button(
         frame8,
@@ -433,6 +493,81 @@ def load_frame4(frame):
     )
     add_ques_gtadmin_btn.grid(row=0, column=1, padx=(25, 10), pady=15 , sticky="w")
     set_hover_effects(add_ques_gtadmin_btn)
+
+
+    def search_ques():
+        nonlocal ser_or_update
+
+        if vd.is_text_empty(question_ser.get()):  
+            messagebox.showerror("QUESTION REVISION APP", "Question ID can't be empty.")
+            return
+        elif vd.is_not_digit(question_ser.get()):  
+            messagebox.showerror("QUESTION REVISION APP", "Question ID can only be number.")
+            return
+        else:    
+            try:
+                question = ques.search_question(question_ser.get())
+                
+            except Exception as ex:
+                messagebox.showerror("QUESTION REVISION APP", "Question with given ID not found.")
+                question_ser.delete(0, tk.END)
+                qid.delete(0, tk.END)
+                qid.config(state="normal")
+                qid.delete(0, tk.END)
+                qid.insert(0, get_next_id(ques.get_questions()))
+                qid.config(state="readonly")
+                question_in.delete(1.0, tk.END)
+                solution_in.delete(1.0, tk.END)
+                selected_option.set("Easy")
+                dropdown.set(options[0])            
+                return           
+       
+        
+        qid.config(state="normal")
+        qid.delete(0, tk.END)
+        qid.insert(0, question_ser.get())
+        qid.config(state="readonly")
+        
+        ser_or_update = True
+
+        question_in.delete(1.0, tk.END)
+        question_in.insert(1.0, question["question"])
+
+        solution_in.delete(1.0, tk.END)
+        solution_in.insert(1.0, question["solution"])
+
+        selected_option.set("Easy")
+        selected_option.set(question["difficulty"])
+
+        dropdown.set(question["category"])
+        
+        canvas.yview_moveto(0)
+        qid.focus_set() 
+    
+# This button is added as last cause search_ques must be declared first its command
+# And search_ques needs all the qid, question and so on to be initialized first
+
+    add_que_ser_btn = tk.Button(
+        frame5,
+        text="SEARCH",
+        font=("Verdana", 12),
+        bg=btn_bg_color,
+        fg="white",
+        cursor="hand2",
+        activebackground=btn_ac_bg_color,
+        activeforeground="black",
+        command=lambda: search_ques()
+    )
+
+    if update_id:
+        question_ser.insert(0, update_id)
+        search_ques()
+
+
+    add_que_ser_btn.grid(row=0, column=2, padx=10, sticky="w")
+    set_hover_effects(add_que_ser_btn)
+
+
 
 def load_frame9(frame):
 
@@ -495,103 +630,35 @@ def load_frame9(frame):
     tree.column("category", width=120, anchor="center")
     tree.column("difficulty", width=120, anchor="center")
 
-    # Insert sample data with alternating background manually
-    categories = ['Math', 'Science', 'History', 'Geography', 'Literature']
-    difficulties = ['easy', 'medium', 'hard']
-    questions = [
-        "What is the capital of France?",
-        "Who developed\n\t the theory of \nrelativity?Who developed\n\t the theory of \nrelativity?Who developed\n\t the theory of \nrelativity?",
-        "In what year did World War II end?",
-        "Who wrote 'Pride and Prejudice'?",
-        "What is the square root of 144?",
-        "What is the chemical symbol for water?",
-        "Who painted the Mona Lisa?",
-        "What is the longest river in the world?",
-        "Which planet is known as the Red Planet?",
-        "What is the atomic number of oxygen?",
-        "Who invented the telephone?",
-        "What is the tallest mountain in the world?",
-        "Who was the first President of the United States?",
-        "What is the capital of Japan?",
-        "Who discovered penicillin?"
-    ]
-
-    # Random data generation
-    data = [
-        (i+1, random.choice(questions), random.choice(categories), random.choice(difficulties))
-        for i in range(15)
-    ]
+    data = ques.get_questions()
     # Tag configuration for alternate rows
     tree.tag_configure('evenrow', background="#f7dec3", foreground="#000000") 
     tree.tag_configure('oddrow', background="#444444")   
 
-    for index, row in enumerate(data):
+    for index, (key, item) in enumerate(data.items()):
+        row = (key, item["question"], item["category"], item["difficulty"] )
         tag = 'evenrow' if index % 2 == 0 else 'oddrow'
         tree.insert("", "end", values=row, tags=(tag,))
 
     tree.grid(row=1, column=0, padx=(25, 10), pady=10, sticky="w")
 
-    li_ques_pag_btn = tk.Button(
-        frame10,
-        text="1",
-        font=("Verdana", 10),
-        bg=btn_bg_color,
-        fg="white",
-        cursor="hand2",
-        activebackground=btn_ac_bg_color,
-        activeforeground="black",
-        command=lambda: print("hello")
-    )
-    li_ques_pag_btn.grid(row=0, column=0, padx=(25, 10), pady=15 , ipadx=3, ipady=3 , sticky="w")
-    set_hover_effects(li_ques_pag_btn)
+    for i in range(1, 25):
 
-
-    li_ques_pag_btn4 = tk.Button(
-        frame10,
-        text="2",
-        font=("Verdana", 10),
-        bg=btn_bg_color,
-        fg="white",
-        cursor="hand2",
-        activebackground=btn_ac_bg_color,
-        activeforeground="black",
-        command=lambda: print("hello")
-    )
-    li_ques_pag_btn4.grid(row=0, column=1, padx=(25, 10), pady=15 ,ipadx=3, ipady=3 , sticky="w")
-    set_hover_effects(li_ques_pag_btn4)
-
-
-    li_ques_pag_btn1 = tk.Button(
-        frame10,
-        text="3",
-        font=("Verdana", 10),
-        bg=btn_bg_color,
-        fg="white",
-        cursor="hand2",
-        activebackground=btn_ac_bg_color,
-        activeforeground="black",
-        command=lambda: print("hello")
-    )
-    li_ques_pag_btn1.grid(row=0, column=2, padx=(25, 10), pady=15, ipadx=3, ipady=3 , sticky="w")
-    set_hover_effects(li_ques_pag_btn1)
-
-    li_ques_pag_btn2= tk.Button(
-        frame10,
-        text="4",
-        font=("Verdana", 10),
-        bg=btn_bg_color,
-        fg="white",
-        cursor="hand2",
-        activebackground=btn_ac_bg_color,
-        activeforeground="black",
-        command=lambda: print("hello")
-    )
-    li_ques_pag_btn2.grid(row=0, column=3, padx=(25, 10), pady=15, ipadx=3, ipady=3 , sticky="w")
-    set_hover_effects(li_ques_pag_btn2)
-
-
-
-
+        li_ques_pag_btn = tk.Button(
+            frame10,
+            text=i,
+            font=("Verdana", 10),
+            bg=btn_bg_color,
+            fg="white",
+            cursor="hand2",
+            activebackground=btn_ac_bg_color,
+            activeforeground="black",
+            command=lambda: print("hello")
+        )
+        li_ques_pag_btn.grid(row=0, column=i, padx=1, pady=1 , ipadx=3, ipady=3 , sticky="w")
+        set_hover_effects(li_ques_pag_btn)
+    
+    
     li_ques_view= tk.Button(
         frame11,
         text="VIEW QUESTION",
@@ -601,8 +668,25 @@ def load_frame9(frame):
         cursor="hand2",
         activebackground=btn_ac_bg_color,
         activeforeground="black",
-        command=lambda: print("hello")
+        command=lambda: view_question_form()
     )
+
+    def view_question_form():
+        selected_items = tree.selection()
+        to_view_id = []
+
+        for item in selected_items:
+            values = tree.item(item, 'values')
+            if values:
+                to_view_id.append(values[0])  
+        
+        if vd.is_list_empty(to_view_id):
+            messagebox.showerror("Question Revision App", "Please, select the question(s) first to view.")
+            return
+        else:          
+            load_frame17(frame9, to_view_id)
+
+
     li_ques_view.grid(row=0, column=1, padx=(25, 10), pady=15, ipadx=3, ipady=3 , sticky="w")
     set_hover_effects(li_ques_view)
 
@@ -615,10 +699,44 @@ def load_frame9(frame):
         cursor="hand2",
         activebackground=btn_ac_bg_color,
         activeforeground="black",
-        command=lambda: print("hello")
+        command=lambda: delete_selected_row()
     )
     li_ques_delete.grid(row=0, column=2, padx=(25, 10), pady=15, ipadx=3, ipady=3 , sticky="w")
     set_hover_effects(li_ques_delete)
+
+    def delete_selected_row():
+        selected_items = tree.selection()  # Get all selected item IDs
+        ids_to_delete = []
+        for item in selected_items:
+            values = tree.item(item, 'values')
+            if values:
+                ids_to_delete.append(values[0])   # Safely remove key if it exists
+
+        if vd.is_list_empty(ids_to_delete):
+            messagebox.showerror("Question Revision App", "Please, select the question(s) first to delete.")
+            return
+        else:        
+            try:
+                ques.delete_selected_row(ids_to_delete)
+
+                for row in tree.get_children():
+                    tree.delete(row)
+
+                data = ques.get_questions()
+
+                for index, (key, item) in enumerate(data.items()):
+                    row = (key, item["question"], item["category"], item["difficulty"] )
+                    tag = 'evenrow' if index % 2 == 0 else 'oddrow'
+                    tree.insert("", "end", values=row, tags=(tag,))
+                
+                tree.yview_moveto(0)
+                canvas1.yview_moveto(0)
+
+                messagebox.showinfo("Question Revision App", "Question(s) deleted successfully.")
+            
+            except Exception as ex:
+                print(ex)
+                messagebox.showerror("Question Revision App", "Question(s) deletion failed.")       
 
 
     li_ques_update= tk.Button(
@@ -630,10 +748,24 @@ def load_frame9(frame):
         cursor="hand2",
         activebackground=btn_ac_bg_color,
         activeforeground="black",
-        command=lambda: print("hello")
+        command=lambda: send_for_update()
     )
     li_ques_update.grid(row=0, column=3, padx=(25, 10), pady=15, ipadx=3, ipady=3 , sticky="w")
     set_hover_effects(li_ques_update)
+
+    def send_for_update():
+        selected_item_id = tree.focus()
+
+        # If nothing is selected, tree.focus() returns an empty string
+        if not selected_item_id:
+            messagebox.showerror("Question Revision App", "Please, select the question first to update.")
+            return            
+        else:
+            item = tree.item(selected_item_id)
+            values = item['values']
+            to_update_id = values[0]
+
+            load_frame4(frame9, to_update_id)
 
     li_ques_admin_btn = tk.Button(
         frame11,
@@ -672,14 +804,15 @@ def load_frame12(frame):
         font=("Verdana", 15)
     ).grid(row=0, column=0, padx=(25, 10), pady=10, sticky="w")
 
-    tk.Entry(
+    entry1 = tk.Entry(
         frame14,
         width=5,
         font=("Verdana", 12),
         bg=bg_color_txt_fld,
         fg=fg_color1,
         insertbackground=fg_color1
-    ).grid(row=0, column=1, padx=10, pady= 5, ipadx=5, ipady=5, sticky="w")
+    )
+    entry1.grid(row=0, column=1, padx=10, pady= 5, ipadx=5, ipady=5, sticky="w")
    
     tk.Label(
         frame13,
@@ -689,11 +822,8 @@ def load_frame12(frame):
         font=("Verdana", 15)
     ).grid(row=0, column=0, padx=(25, 10), pady=10, sticky="w")
 
-
-     # Create radio buttons with 3 options
-    
     # List of options
-    checkbox_texts = ["EASY", "MEDIUM", "HARD"]
+    checkbox_texts = ["Easy", "Medium", "Hard"]
     checkbox_vars = []
 
     # Create a Checkbutton for each item
@@ -710,8 +840,8 @@ def load_frame12(frame):
             font=("Verdana", 12)
         )
         cb.grid(row=0, column=index+1, padx=(25, 10), pady=5, sticky="w")
-   
 
+    
     tk.Label(
         frame15,
         text="Revised",
@@ -721,7 +851,20 @@ def load_frame12(frame):
     ).grid(row=0, column=0, padx=(25, 10), pady=10, sticky="w")
 
     # Variable to store the selected option
-    selected_option_revi = tk.StringVar(value="Easy")  # Initially, no option is selected
+    global selected_option_revi 
+    selected_option_revi= tk.StringVar(value="any")  # Initially, no option is selected
+
+    tk.Radiobutton(        
+        frame15, 
+        bg= bg_color,
+        fg= fg_color2,
+        selectcolor= bg_color,
+        font=("Verdana", 12),
+        text="Any",
+        value="any",         
+        variable=selected_option_revi,
+        command=lambda: update_entry_state()
+    ).grid(row=0, column=1, padx=(25, 10), pady=5, sticky="w")
 
     tk.Radiobutton(
         frame15, 
@@ -729,47 +872,43 @@ def load_frame12(frame):
         fg= fg_color2,
         selectcolor= bg_color,
         font=("Verdana", 12),
-        text="Less Than", 
-        variable=selected_option_revi, 
-        value="less_than", 
-        command=lambda: print("select")
-    ).grid(row=0, column=1, padx=(25, 10), pady=5, sticky="w")
+        text="Less Than",         
+        value="less_than",
+        variable=selected_option_revi,
+        command= lambda: update_entry_state()
+    ).grid(row=0, column=2, padx=(25, 10), pady=5, sticky="w")
 
-    tk.Entry(
+    
+    entry2 = tk.Entry(
         frame15,
         width=3,
         font=("Verdana", 12),
         bg=bg_color_txt_fld,
         fg=fg_color1,
         insertbackground=fg_color1
-    ).grid(row=0, column=2, padx=10, pady= 5, ipadx=5, ipady=5, sticky="w")
-
-
-    tk.Radiobutton(
-        frame15, 
-        bg= bg_color,
-        fg= fg_color2,
-        selectcolor= bg_color,
-        font=("Verdana", 12),
-        text="Any", 
-        command=lambda: print("select"),
-        value="any", 
-        variable=selected_option_revi
-    ).grid(row=0, column=3, padx=(25, 10), pady=5, sticky="w")
-
-
+    )
+    entry2.grid(row=0, column=3, padx=10, pady= 5, ipadx=5, ipady=5, sticky="w")
+    entry2.config(state="disabled", disabledbackground=bg_color_txt_fld)
+    
+    def update_entry_state():
+        if selected_option_revi.get() == "any":
+            entry2.delete(0, tk.END)
+            entry2.insert(0, "")
+            entry2.config(state="disabled",disabledbackground=bg_color_txt_fld)
+        else:
+            entry2.config(state="normal",disabledbackground=bg_color_txt_fld)
+    
     # List of options
-    checkbox_texts = ["DSA", "PYTHON", "JAVASCRIPT", "GK", "APTITUDE"]
-    checkbox_vars = []
-
+    checkbox_texts1 = ques.get_categories()
+    checkbox_vars1 = []
     # Create a Checkbutton for each item
-    for index in range(len(checkbox_texts)):
-        var = tk.IntVar()  # Variable to store the checkbox state
-        checkbox_vars.append(var)
+    for index in range(len(checkbox_texts1)):
+        var1 = tk.IntVar()  # Variable to store the checkbox state
+        checkbox_vars1.append(var1)
         cb = tk.Checkbutton(
             frame16,
-            text=checkbox_texts[index], 
-            variable=var, 
+            text=checkbox_texts1[index], 
+            variable=var1, 
             bg = bg_color, 
             fg= fg_color2, 
             selectcolor=bg_color,
@@ -777,6 +916,8 @@ def load_frame12(frame):
         )
         cb.grid(row=0, column=index, padx=(25, 10), pady=5, sticky="w")
 
+        
+    
     ques_gene_btn = tk.Button(
         frame12,
         text="GENERATE QUESTIONS",
@@ -786,10 +927,48 @@ def load_frame12(frame):
         cursor="hand2",
         activebackground=btn_ac_bg_color,
         activeforeground="black",
-        command=lambda: load_frame17(frame12)
+        command=lambda: get_selected_questions()
     )
     ques_gene_btn.grid(row=6, column=0, padx=(25, 10), pady=15 , sticky="w")
     set_hover_effects(ques_gene_btn)
+
+    def get_selected_questions():
+        
+        selected_difficulties = [checkbox_texts[i] for i in range(len(checkbox_texts)) if checkbox_vars[i].get() == 1]
+       
+        revised_times = selected_option_revi.get()
+        if revised_times == "any":
+            rev = -1
+        else:
+            if vd.is_text_empty(entry2.get()):
+                messagebox.showerror("Question Revision App", "Please, enter revised less than.")
+                return
+            elif vd.is_not_digit(entry2.get()):
+                messagebox.showerror("Question Revision App", "Please, revised less than must be digit.")
+                return
+            else:
+                rev = int(entry2.get())
+       
+        selected_categories = [checkbox_texts1[i] for i in range(len(checkbox_texts1)) if checkbox_vars1[i].get() == 1]
+        
+        
+        if vd.is_list_empty(entry1.get()):
+            messagebox.showerror("Question Revision App", "Please, enter no of questions to be generated.")
+            return
+        elif vd.is_not_digit(entry1.get()):
+            messagebox.showerror("Question Revision App", "Please, no of questions to be generated must be digit.")
+            return
+        elif vd.are_all_checkboxes_unselected(checkbox_vars):
+            messagebox.showerror("Question Revision App", "Please, select at least one difficulty.")
+            return
+        elif vd.are_all_checkboxes_unselected(checkbox_vars1):
+            messagebox.showerror("Question Revision App", "Please, select at least one category.")
+            return
+        else:
+ 
+            selected_questions = ques.search_questions_by_categories(int(entry1.get()), selected_categories, selected_difficulties, rev)
+            load_frame17(frame12, list(selected_questions.keys()))
+
 
     gen_back_btn = tk.Button(
         frame12,
@@ -805,8 +984,10 @@ def load_frame12(frame):
     gen_back_btn.grid(row=6, column=0, padx=(300, 10), pady=15 , sticky="w")
     set_hover_effects(gen_back_btn)
 
-def load_frame17(frame):
-
+def load_frame17(frame, to_view_id=None):
+    curr_index = 0    
+    question = None
+    
     destroy_all_widgets_exclude(frame)
 
     frame17.tkraise() 
@@ -821,29 +1002,31 @@ def load_frame17(frame):
         font=("Verdana", 15)
     ).grid(row=0, column=0, padx=(25, 10), pady=10, sticky="w")
 
-    tk.Label(
+    id_lbl = tk.Label(
         frame18,
         text="38",
         bg=bg_color,
         fg=fg_color1,
         font=("Verdana", 15)
-    ).grid(row=0, column=1, padx=(0, 10), pady=10, sticky="w")
+    )
+    id_lbl.grid(row=0, column=1, padx=(0, 10), pady=10, sticky="w")
 
     tk.Label(
         frame18,
-        text="Dificulty",
+        text="Difficulty",
         bg=bg_color,
         fg=fg_color2,
         font=("Verdana", 15)
     ).grid(row=0, column=2, padx=(100, 10), pady=10, sticky="w")
 
-    tk.Label(
+    diff_lbl = tk.Label(
         frame18,
         text="HARD",
         bg=bg_color,
         fg=fg_color1,
         font=("Verdana", 15)
-    ).grid(row=0, column=3, padx=(0, 10), pady=10, sticky="w")
+    )
+    diff_lbl.grid(row=0, column=3, padx=(0, 10), pady=10, sticky="w")
 
     tk.Label(
         frame18,
@@ -853,13 +1036,48 @@ def load_frame17(frame):
         font=("Verdana", 15)
     ).grid(row=0, column=4, padx=(100, 10), pady=10, sticky="w")
 
-    tk.Label(
+    sol_lvl = tk.Label(
         frame18,
         text="5 times",
         bg=bg_color,
         fg=fg_color1,
         font=("Verdana", 15)
-    ).grid(row=0, column=5, padx=(0, 10), pady=10, sticky="w")
+    )
+    sol_lvl.grid(row=0, column=5, padx=(0, 10), pady=10, sticky="w")
+
+    tk.Label(
+        frame18,
+        text="Question",
+        bg=bg_color,
+        fg=fg_color2,
+        font=("Verdana", 15)
+    ).grid(row=0, column=6, padx=(100, 10), pady=10, sticky="w")
+
+    curr_index_lbl = tk.Label(
+        frame18,
+        text="0",
+        bg=bg_color,
+        fg=fg_color1,
+        font=("Verdana", 15)
+    )
+    curr_index_lbl.grid(row=0, column=7, padx=(0, 10), pady=10, sticky="w")
+
+    tk.Label(
+        frame18,
+        text="out of",
+        bg=bg_color,
+        fg=fg_color2,
+        font=("Verdana", 15)
+    ).grid(row=0, column=8, padx=(0, 10), pady=10, sticky="w")
+
+    tot_selected_lbl = tk.Label(
+        frame18,
+        text="0",
+        bg=bg_color,
+        fg=fg_color1,
+        font=("Verdana", 15)
+    )
+    tot_selected_lbl.grid(row=0, column=9, padx=(0, 10), pady=10, sticky="w")
 
     view_ques_btn = tk.Button(
         frame19,
@@ -870,7 +1088,7 @@ def load_frame17(frame):
         cursor="hand2",
         activebackground=btn_ac_bg_color,
         activeforeground="black",
-        command=lambda: print("hello")
+        command=lambda: show_question()
     )
     view_ques_btn.grid(row=0, column=0, padx=(25, 10), pady=15 , sticky="w")
     set_hover_effects(view_ques_btn)
@@ -884,7 +1102,7 @@ def load_frame17(frame):
         cursor="hand2",
         activebackground=btn_ac_bg_color,
         activeforeground="black",
-        command=lambda: print("hello")
+        command=lambda: show_solution()
     )
     view_soln_btn.grid(row=0, column=1, padx=(25, 10), pady=15 , sticky="w")
     set_hover_effects(view_soln_btn)
@@ -898,10 +1116,15 @@ def load_frame17(frame):
         cursor="hand2",
         activebackground=btn_ac_bg_color,
         activeforeground="black",
-        command=lambda: print("hello")
+        command=lambda: add_revised()
     )
     add_revised_btn.grid(row=0, column=2, padx=(25, 10), pady=15 , sticky="w")
     set_hover_effects(add_revised_btn)
+
+    def add_revised():
+        new_revised = ques.add_revised(str(id_lbl.cget("text")))
+        sol_lvl.config(text = new_revised)
+        
 
     del_ques_btn = tk.Button(
         frame19,
@@ -912,8 +1135,40 @@ def load_frame17(frame):
         cursor="hand2",
         activebackground=btn_ac_bg_color,
         activeforeground="black",
-        command=lambda: print("hello")
+        command=lambda: delete_question()
     )
+
+    def delete_question():
+        nonlocal curr_index
+        nonlocal question
+        try:
+            ques.delete_one_row(str(id_lbl.cget("text")))
+            messagebox.showinfo("Question Revision App", "Question deletion successful.")
+
+            to_view_id.remove(str(id_lbl.cget("text")))
+            
+            if len(to_view_id) == 0 :
+                load_frame9(frame12)
+            else:
+                curr_index = 0
+                
+                curr_index_lbl.config(text = curr_index + 1)
+                tot_selected_lbl.config(text = len(to_view_id))
+
+                question = ques.search_question(str(to_view_id[curr_index]))
+                id_lbl.config(text = to_view_id[curr_index])
+                diff_lbl.config(text = question["difficulty"])
+                sol_lvl.config(text = question["revised"])
+
+                ques_sol_txt.delete("1.0", tk.END)
+                ques_sol_txt.insert("1.0", question["question"])
+
+            
+        except Exception as ex:
+            print(ex)
+            messagebox.showerror("Question Revision App", "Sorry, question deletion failed.")     
+
+
     del_ques_btn.grid(row=0, column=3, padx=(25, 10), pady=15 , sticky="w")
     set_hover_effects(del_ques_btn)
 
@@ -931,7 +1186,7 @@ def load_frame17(frame):
     view_ques_btn.grid(row=0, column=4, padx=(25, 10), pady=15 , sticky="w")
     set_hover_effects(view_ques_btn)
 
-    tk.Text(
+    ques_sol_txt = tk.Text(
         frame17,
         width=110,
         height=15,
@@ -939,7 +1194,8 @@ def load_frame17(frame):
         bg=bg_color_txt_fld,
         fg=fg_color1,
         insertbackground=fg_color1
-    ).grid(row=2, column=0, columnspan=25, padx=(25, 10), pady=5, ipadx=5, ipady=5, sticky="w")
+    )
+    ques_sol_txt.grid(row=2, column=0, columnspan=25, padx=(25, 10), pady=5, ipadx=5, ipady=5, sticky="w")
 
 
     prev_ques_btn = tk.Button(
@@ -951,11 +1207,32 @@ def load_frame17(frame):
         cursor="hand2",
         activebackground=btn_ac_bg_color,
         activeforeground="black",
-        command=lambda: print("hello")
+        command=lambda: show_previous()
     )
     prev_ques_btn.grid(row=0, column=0, padx=(25, 10), pady=15)
     set_hover_effects(prev_ques_btn)
 
+    def show_previous():
+        nonlocal curr_index
+        nonlocal question
+
+        if curr_index > 0:
+            curr_index -= 1
+
+            curr_index_lbl.config(text = curr_index + 1)
+            tot_selected_lbl.config(text = len(to_view_id))
+
+            question = ques.search_question(str(to_view_id[curr_index]))
+            id_lbl.config(text = to_view_id[curr_index])
+            diff_lbl.config(text = question["difficulty"])
+            sol_lvl.config(text = question["revised"])
+
+            ques_sol_txt.delete("1.0", tk.END)
+            ques_sol_txt.insert("1.0", question["question"])
+        else:
+            messagebox.showwarning("Question Revision App", "No previous question to show.")
+
+    
     next_ques_btn = tk.Button(
         frame20,
         text="NEXT QUESTION",
@@ -965,10 +1242,53 @@ def load_frame17(frame):
         cursor="hand2",
         activebackground=btn_ac_bg_color,
         activeforeground="black",
-        command=lambda: print("hello")
+        command=lambda: show_next()
     )
     next_ques_btn.grid(row=0, column=1, padx=(750, 10), pady=15)
     set_hover_effects(next_ques_btn)
+
+    def show_next():
+        nonlocal curr_index
+        nonlocal question
+
+        if curr_index < len(to_view_id)-1:
+            curr_index += 1
+            question = ques.search_question(str(to_view_id[curr_index]))
+
+            curr_index_lbl.config(text = curr_index + 1)
+            tot_selected_lbl.config(text = len(to_view_id))
+
+            id_lbl.config(text = to_view_id[curr_index])
+            diff_lbl.config(text = question["difficulty"])
+            sol_lvl.config(text = question["revised"])
+
+            ques_sol_txt.delete("1.0", tk.END)
+            ques_sol_txt.insert("1.0", question["question"])
+        else:
+            messagebox.showwarning("Question Revision App", "No next question to show.")
+
+        
+    curr_index_lbl.config(text = curr_index + 1)
+    tot_selected_lbl.config(text = len(to_view_id))
+
+    question = ques.search_question(str(to_view_id[curr_index]))
+    
+    id_lbl.config(text = to_view_id[curr_index])
+    diff_lbl.config(text = question["difficulty"])
+    sol_lvl.config(text = question["revised"])
+
+    ques_sol_txt.delete("1.0", tk.END)
+    ques_sol_txt.insert("1.0", question["question"])
+    
+
+    def show_question():
+        ques_sol_txt.delete("1.0", tk.END)
+        ques_sol_txt.insert("1.0", question["question"])
+    
+    def show_solution():
+        ques_sol_txt.delete("1.0", tk.END)
+        ques_sol_txt.insert("1.0", question["solution"])
+
 
 
 # Set up the main window
