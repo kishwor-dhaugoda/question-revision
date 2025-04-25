@@ -1,4 +1,77 @@
 {
     "categories" : ["DSA", "PYTHON", "JAVASCRIPT", "SQL"],
-    "themes" : ["theme1", "theme2"]
+    "themes" : {
+        "theme4": {
+            "bg_color": "#282a36",
+            "bg_color_txt_fld" : "#626363",
+            "fg_color" : "#f1fa8c",
+            "fg_color1" : "#13d443",
+            "fg_color2": "#ffb86c",
+            "btn_bg_color1" : "#328a35",
+            "btn_ac_bg_color1" : "#6bb56d",
+            "btn_bg_color" : "#e85b1e",
+            "btn_ac_bg_color" : "#ed9c79",
+            "even_row_table_bg" : "#fcdfc0",
+            "even_row_table_fg" : "#000000",  
+            "odd_row_table_bg" : "#444444"
+        },
+        "theme2": {
+              "bg_color": "#1e272e",
+              "bg_color_txt_fld": "#485460",
+              "fg_color": "#f0ece2",
+              "fg_color1": "#ffa45b",
+              "fg_color2": "#53b6b0",
+              "btn_bg_color1": "#cc3300",
+              "btn_ac_bg_color1": "#ff6f3f",
+              "btn_bg_color": "#507dbc",
+              "btn_ac_bg_color": "#749bc2",
+              "even_row_table_bg": "#efefef",
+              "even_row_table_fg": "#000000",
+              "odd_row_table_bg": "#34495e"            
+        },
+        "theme3" : {
+            "bg_color": "#2c3e50",
+            "bg_color_txt_fld": "#34495e",
+            "fg_color": "#ecf0f1",
+            "fg_color1": "#ecf0f1",
+            "fg_color2": "#1abc9c",
+            "btn_bg_color1": "#2980b9",
+            "btn_ac_bg_color1": "#3498db",
+            "btn_bg_color": "#8e44ad",
+            "btn_ac_bg_color": "#9b59b6",
+            "even_row_table_bg": "#bdc3c7",
+            "even_row_table_fg": "#2c3e50",
+            "odd_row_table_bg": "#7f8c8d"
+        },
+        "theme1" : {
+            "bg_color": "#0d0d0d",
+            "bg_color_txt_fld": "#262626",
+            "fg_color": "#f5f5f5",
+            "fg_color1": "#d4af37",
+            "fg_color2": "#16a085",
+            "btn_bg_color1": "#e67e22",
+            "btn_ac_bg_color1": "#f39c12",
+            "btn_bg_color": "#c0392b",
+            "btn_ac_bg_color": "#e74c3c",
+            "even_row_table_bg": "#1a1a1a",
+            "even_row_table_fg": "#ffffff",
+            "odd_row_table_bg": "#333333"
+        },
+        "theme5": {
+            "bg_color": "#1a1a1a",
+            "bg_color_txt_fld": "#2b2b2b",
+            "fg_color": "#f5f5f5",
+            "fg_color1": "#bfbfbf",
+            "fg_color2": "#8c8c8c",
+            "btn_bg_color1": "#404040",
+            "btn_ac_bg_color1": "#707070",
+            "btn_bg_color": "#262626",
+            "btn_ac_bg_color": "#878787",
+            "even_row_table_bg": "#2a2a2a",
+            "even_row_table_fg": "#e0e0e0",
+            "odd_row_table_bg": "#1f1f1f"
+    }
+          
+    }
 }
+

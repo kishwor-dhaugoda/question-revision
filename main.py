@@ -8,21 +8,25 @@ from PIL import Image, ImageTk
 import validators as vd
 
 import Question as ques
+import Themes as the
 
-bg_color = "#282a36"
-bg_color_txt_fld = "#626363"
-fg_color = "#f1fa8c"
-fg_color1 = "#13d443"
-fg_color2= "#ffb86c"
-
-btn_bg_color1 = "#328a35"
-btn_ac_bg_color1 = "#6bb56d"
-
-btn_bg_color = "#e85b1e"
-btn_ac_bg_color = "#ed9c79"
-
-
+the.load_themes()
 ques.load_questions()
+
+theme = the.get_theme()
+
+bg_color = theme['bg_color']
+bg_color_txt_fld = theme['bg_color_txt_fld']
+fg_color = theme['fg_color']
+fg_color1 = theme['fg_color1']
+fg_color2 = theme['fg_color2']
+btn_bg_color1 = theme['btn_bg_color1'] 
+btn_ac_bg_color1 = theme['btn_ac_bg_color1']
+btn_bg_color = theme['btn_bg_color'] 
+btn_ac_bg_color = theme['btn_ac_bg_color']
+even_row_table_bg = theme['even_row_table_bg']  
+even_row_table_fg = theme['even_row_table_fg']  
+odd_row_table_bg = theme['odd_row_table_bg'] 
 
 def destroy_all_widgets(frame):
     if frame:
@@ -62,6 +66,7 @@ def set_hover_effects(button, hover_bg=btn_ac_bg_color, hover_fg="#000000", norm
     button.bind("<Enter>", lambda e: button.config(bg=hover_bg, fg=hover_fg))
     button.bind("<Leave>", lambda e: button.config(bg=normal_bg, fg=normal_fg))
 
+
 def load_frame1():
     
     frame1.tkraise()  # Bring frame1 to the front
@@ -94,7 +99,8 @@ def load_frame1():
         fg="#ffffff",
         font=("Verdana", 30)
     ).grid(row=0, column=1, padx=10, pady=10)
- 
+
+
 def load_frame3(frame):
 
     destroy_all_widgets_exclude(frame)    
@@ -677,8 +683,8 @@ def load_frame9(frame, curr=None):
         tree.delete(item)
 
     # Tag configuration for alternate rows
-    tree.tag_configure('evenrow', background="#f7dec3", foreground="#000000") 
-    tree.tag_configure('oddrow', background="#444444")   
+    tree.tag_configure('evenrow', background=even_row_table_bg, foreground=even_row_table_fg) 
+    tree.tag_configure('oddrow', background=odd_row_table_bg)   
 
     for index, (key, item) in enumerate(items[st_index: ed_index+1]):
         row = (key, item["question"], item["category"], item["difficulty"] )
@@ -766,6 +772,9 @@ def load_frame9(frame, curr=None):
             # Highlight the current page
             if link == curr:
                 li_ques_pag_btn.config(bg=btn_bg_color1, activebackground=btn_bg_color1, activeforeground="white")
+                li_ques_pag_btn.grid(row=0, column=button_col, padx=1, pady=1, ipadx=3, ipady=3, sticky="w")
+                button_col += 1
+                continue
 
             li_ques_pag_btn.grid(row=0, column=button_col, padx=1, pady=1, ipadx=3, ipady=3, sticky="w")
             set_hover_effects(li_ques_pag_btn)
