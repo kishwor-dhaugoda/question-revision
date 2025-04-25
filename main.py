@@ -1,3 +1,4 @@
+import math
 import os
 import tkinter as tk
 from tkinter import ttk
@@ -569,7 +570,7 @@ def load_frame4(frame, update_id=None):
 
 
 
-def load_frame9(frame):
+def load_frame9(frame, curr=None):
 
     destroy_all_widgets_exclude(frame)
 
@@ -594,7 +595,7 @@ def load_frame9(frame):
     style.configure("Custom.Treeview",
                     background=bg_color_txt_fld,           # Default background
                     foreground=fg_color1,             # Text color
-                    rowheight=100,
+                    rowheight=150,
                     fieldbackground=bg_color_txt_fld,      # Background for empty space
                     font=("Verdana", 10))
 
@@ -617,7 +618,11 @@ def load_frame9(frame):
     style.map("Custom.Treeview.Heading", background=[], foreground=[], relief=[], font=[])
 
     # Create Treeview
-    tree = ttk.Treeview(scrollable_frame1, columns=("id", "question", "category", "difficulty"), show="headings", style="Custom.Treeview")
+    tree = ttk.Treeview(
+        scrollable_frame1,
+        columns=("id", "question", "category", "difficulty"), 
+        show="headings", 
+        style="Custom.Treeview")
 
     # Define columns
     tree.heading("id", text="ID", anchor="w")
@@ -630,35 +635,143 @@ def load_frame9(frame):
     tree.column("category", width=120, anchor="center")
     tree.column("difficulty", width=120, anchor="center")
 
+    #loading all the questions
+    # data = ques.get_questions()
+    # # Tag configuration for alternate rows
+    # tree.tag_configure('evenrow', background="#f7dec3", foreground="#000000") 
+    # tree.tag_configure('oddrow', background="#444444")   
+
+    # for index, (key, item) in enumerate(data.items()):
+    #     row = (key, item["question"], item["category"], item["difficulty"] )
+    #     tag = 'evenrow' if index % 2 == 0 else 'oddrow'
+    #     tree.insert("", "end", values=row, tags=(tag,))
+
+    # tree.grid(row=1, column=0, padx=(25, 10), pady=10, sticky="w")
+
+#paginated links
+
+    total = len(ques.get_questions())
+
+    per_page = 5
+
+    tree.configure(height=per_page)
+
+    last_link = math.ceil(total/per_page)
+
+    if not curr:
+        curr = 1
+
+    st_index = (curr-1) * per_page
+    if curr == (last_link):
+        ed_index = total-1
+    else:
+        ed_index = st_index + (per_page - 1)
+    
     data = ques.get_questions()
+
+    # Convert data.items() to a list for slicing
+    items = list(data.items())
+
+    # Clear previous entries from the tree
+    for item in tree.get_children():
+        tree.delete(item)
+
     # Tag configuration for alternate rows
     tree.tag_configure('evenrow', background="#f7dec3", foreground="#000000") 
     tree.tag_configure('oddrow', background="#444444")   
 
-    for index, (key, item) in enumerate(data.items()):
+    for index, (key, item) in enumerate(items[st_index: ed_index+1]):
         row = (key, item["question"], item["category"], item["difficulty"] )
         tag = 'evenrow' if index % 2 == 0 else 'oddrow'
         tree.insert("", "end", values=row, tags=(tag,))
 
     tree.grid(row=1, column=0, padx=(25, 10), pady=10, sticky="w")
 
-    for i in range(1, 25):
+    # pagination type 1 without double dotts(..)
+    # for link in range(1, last_link+1):
+        
+    #     li_ques_pag_btn = tk.Button(
+    #         frame10,
+    #         text=link,
+    #         font=("Verdana", 10),
+    #         bg=btn_bg_color,
+    #         fg="white",
+    #         cursor="hand2",
+    #         activebackground=btn_ac_bg_color,
+    #         activeforeground="black",
+    #         command=lambda page=link: load_frame9(frame9, page)
+    #     )
 
-        li_ques_pag_btn = tk.Button(
-            frame10,
-            text=i,
-            font=("Verdana", 10),
-            bg=btn_bg_color,
-            fg="white",
-            cursor="hand2",
-            activebackground=btn_ac_bg_color,
-            activeforeground="black",
-            command=lambda: print("hello")
-        )
-        li_ques_pag_btn.grid(row=0, column=i, padx=1, pady=1 , ipadx=3, ipady=3 , sticky="w")
-        set_hover_effects(li_ques_pag_btn)
-    
-    
+    #     if link == curr:
+    #         li_ques_pag_btn.config(bg=btn_bg_color1, activebackground=btn_bg_color1, activeforeground="white")     
+    #         li_ques_pag_btn.grid(row=1, column=link, padx=1, pady=1 , ipadx=3, ipady=3 , sticky="w")
+    #         continue   
+
+    #     li_ques_pag_btn.grid(row=1, column=link, padx=1, pady=1 , ipadx=3, ipady=3 , sticky="w")
+    #     set_hover_effects(li_ques_pag_btn)
+
+    before_curr = False
+    after_curr = False
+    button_col = 1  # Column index for placing buttons
+
+    for link in range(1, last_link + 1):
+        show_button = False
+
+        # Decide which buttons to show
+        if link == 1 or link == last_link:
+            show_button = True
+        elif abs(link - curr) <= 2:
+            show_button = True
+        elif link < curr - 2 and not before_curr:
+            # Ellipsis before current
+            ellipsis_label = tk.Label(
+                frame10,
+                text="..",
+                font=("Verdana", 10),
+                bg=btn_bg_color,
+                fg="white"
+            )
+            ellipsis_label.grid(row=0, column=button_col, padx=2, pady=2, ipadx=6, ipady=6, sticky="w")
+            button_col += 1
+
+            before_curr = True
+            continue
+        elif link > curr + 2 and not after_curr:
+            # Ellipsis after current
+            ellipsis_label = tk.Label(
+                frame10,
+                text="..",
+                font=("Verdana", 10),
+                bg=btn_bg_color,
+                fg="white"
+            )
+            ellipsis_label.grid(row=0, column=button_col, padx=2, pady=2, ipadx=6, ipady=6, sticky="w")
+            button_col += 1
+            after_curr = True
+            continue
+
+        if show_button:
+            li_ques_pag_btn = tk.Button(
+                frame10,
+                text=link,
+                font=("Verdana", 10),
+                bg=btn_bg_color,
+                fg="white",
+                cursor="hand2",
+                activebackground=btn_ac_bg_color,
+                activeforeground="black",
+                command=lambda page=link: load_frame9(frame9, page)
+            )
+
+            # Highlight the current page
+            if link == curr:
+                li_ques_pag_btn.config(bg=btn_bg_color1, activebackground=btn_bg_color1, activeforeground="white")
+
+            li_ques_pag_btn.grid(row=0, column=button_col, padx=1, pady=1, ipadx=3, ipady=3, sticky="w")
+            set_hover_effects(li_ques_pag_btn)
+            button_col += 1
+
+
     li_ques_view= tk.Button(
         frame11,
         text="VIEW QUESTION",

@@ -1,5 +1,6 @@
 from itertools import islice
 import json
+import os
 
 questions = {}
 categories = {}
@@ -8,6 +9,9 @@ def load_questions():
     global questions
     global categories
 
+    if not os.path.exists("questions.json"):
+        write_questions()
+    
     # Load the JSON data from the file
     with open("questions.json", "r") as file:
         questions = json.load(file)     
